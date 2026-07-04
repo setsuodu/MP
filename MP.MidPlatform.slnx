@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MP.Gateway/MP.Gateway.csproj" />
+    <Project Path="src/MP.Shared/MP.Shared.csproj" />
+    <Project Path="src/MP.UserService/MP.UserService.csproj" />
+  </Folder>
+</Solution>
