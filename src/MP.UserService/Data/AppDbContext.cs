@@ -12,10 +12,16 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>(entity =>
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
+            entity.SetTableName(entity.GetTableName()!.ToLower());
+
+            foreach (var property in entity.GetProperties())
+            {
+                property.SetColumnName(property.GetColumnName()!.ToLower());
+            }
+        }
     }
 }
