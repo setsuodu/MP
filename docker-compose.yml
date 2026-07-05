@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: mp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mp_midplatform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123456"
+    ports:
+      - "9432:5432"   # 宿主机上还是走 9432，方便你本地用 dotnet run 直连调试
+    volumes:
+      - mp_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: mp-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  userservice:
+    build:
+      context: .
+      dockerfile: src/MP.UserService/Dockerfile
+    container_name: mp-userservice
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      # 容器网络内部走服务名 + 容器内部端口（5432），不是宿主机映射的 9432
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=mp_midplatform;Username=postgres;Password=123456;Include Error Detail=true"
+      ConnectionStrings__Redis: "redis:6379,abortConnect=false"
+    ports:
+      - "5001:8080"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: src/MP.Gateway/Dockerfile
+    container_name: mp-gateway
+    restart: unless-stopped
+    depends_on:
+      - userservice
+    ports:
+      - "5000:8080"
+
+volumes:
+  mp_postgres_data:

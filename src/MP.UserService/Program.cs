@@ -22,7 +22,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 // 只用于迁移
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+           .UseSnakeCaseNamingConvention());
 
 // Postgres
 builder.Services.AddSingleton<NpgsqlDataSource>(sp =>
@@ -42,6 +43,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 // DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 
 // Jwt 配置
@@ -62,6 +64,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+// 极简阶段：启动时自动跑迁移，省得每次手动 dotnet ef database update
+// 生产环境不建议这样做（多副本同时跑迁移会打架），届时换成 CI/CD 里单独一步执行
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // 注册路由
 app.MapUserEndpoints();

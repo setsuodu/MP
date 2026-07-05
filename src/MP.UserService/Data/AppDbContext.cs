@@ -2,7 +2,6 @@
 
 using Microsoft.EntityFrameworkCore;
 using MP.UserService.Models;
-using System.Reflection.Emit;
 
 public class AppDbContext : DbContext
 {
@@ -10,18 +9,11 @@ public class AppDbContext : DbContext
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    // 表名/列名统一转 snake_case（users, password_hash, created_at ...）
+    // 由 EFCore.NamingConventions 包处理，不再手写 ToLower 循环，
+    // 也避免了 PasswordHash -> passwordhash 这种单词挤在一起、不可读的问题。
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
-        foreach (var entity in modelBuilder.Model.GetEntityTypes())
-        {
-            entity.SetTableName(entity.GetTableName()!.ToLower());
-
-            foreach (var property in entity.GetProperties())
-            {
-                property.SetColumnName(property.GetColumnName()!.ToLower());
-            }
-        }
     }
 }
