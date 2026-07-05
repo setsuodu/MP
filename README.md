@@ -1,5 +1,7 @@
 # MP / Mid Platform
 
+游戏客户端 → 直接请求 中台 MP.UserService 进行登录，拿到 JWT 后，再带着 JWT 去访问各个 Game MicroService
+
 # 注册
 curl -X POST http://localhost:5001/api/users/register \
   -H "Content-Type: application/json" \
