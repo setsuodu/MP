@@ -1,4 +1,4 @@
-@MP.UserService_HostAddress = http://localhost:5000
+@MP.UserService_HostAddress = http://localhost:5001
 
 GET {{MP.UserService_HostAddress}}/todos/
 Accept: application/json

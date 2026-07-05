@@ -1,4 +1,4 @@
-@MP.Gateway_HostAddress = http://localhost:5001
+@MP.Gateway_HostAddress = http://localhost:5000
 
 GET {{MP.Gateway_HostAddress}}/todos/
 Accept: application/json
