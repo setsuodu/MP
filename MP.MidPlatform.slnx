@@ -4,4 +4,7 @@
     <Project Path="src/MP.Shared/MP.Shared.csproj" />
     <Project Path="src/MP.UserService/MP.UserService.csproj" />
   </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
 </Solution>
