@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MP.UserService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260704212442_LowercaseColumns")]
-    partial class LowercaseColumns
+    [Migration("20260706162819_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,7 @@ namespace MP.UserService.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdat");
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -43,21 +43,22 @@ namespace MP.UserService.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("isactive");
+                        .HasColumnName("is_active");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("passwordhash");
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_users");
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,66 @@
+name: CI Build and Push to GHCR
+
+on:
+  push:
+    tags:
+      - 'v*'            # 严格匹配：只有推 v 开头的 tag（如 v1.0.0）时才触发自动构建
+  workflow_dispatch:    # 保留手动触发，用于测试或者紧急发布
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: setsuodu/mp/mp-user-service
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: dotnet publish (Native AOT)
+        run: |
+          dotnet publish src/MP.UserService/MP.UserService.csproj \
+            -c Release \
+            -r linux-x64 \
+            -o ./src/MP.UserService/publish \
+            -p:PublishAot=true
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 🎯 这里是核心：智能提取 Docker Tag
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # 1. 如果是 tag 触发，提取出来的就是 v1.0.0
+            type=ref,event=tag
+            # 2. 如果是手动触发，提取出来的就是 latest
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
+            # 3. 每次构建顺便打一个短 Commit SHA 标，方便追溯代码
+            type=sha,format=short
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./src/MP.UserService
+          file: ./src/MP.UserService/Dockerfile
+          push: true
+          tags: ${{ id.meta.outputs.tags }}
+          labels: ${{ id.meta.outputs.labels }}
