@@ -62,19 +62,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
         };
     });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 // 极简阶段：启动时自动跑迁移，省得每次手动 dotnet ef database update
 // 生产环境不建议这样做（多副本同时跑迁移会打架），届时换成 CI/CD 里单独一步执行
+/* AOT 运行时不支持
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
+*/
 
 app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthorization(); // 鉴权
 
 // 注册路由
 app.MapUserEndpoints();

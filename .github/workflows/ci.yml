@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: setsuodu/mp/mp-user-service
+  IMAGE_NAME: setsuodu/mp-user-service
 
 jobs:
   build-and-push:
